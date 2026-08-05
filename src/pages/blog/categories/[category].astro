@@ -1,0 +1,72 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog");
+  const categories = new Set<string>();
+  posts.forEach((post) => post.data.categories.forEach((category) => categories.add(category)));
+
+  return Array.from(categories).map((category) => ({
+    params: { category },
+    props: {
+      category,
+      posts: posts.filter((post) => post.data.categories.includes(category)),
+    },
+  }));
+}
+
+const { category, posts } = Astro.props;
+const sorted = posts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const title = `${category} stories | AP Explores`;
+const description = `Blog posts tagged "${category}".`;
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<Layout title={title} description={description}>
+  <a
+    href={`${import.meta.env.BASE_URL}/blog`}
+    class="text-sm font-medium text-slate-500 hover:text-slate-900"
+  >
+    &larr; Back to Blog
+  </a>
+  <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 capitalize">{category}</h1>
+  <p class="mt-2 text-slate-600">{description}</p>
+
+  <ul class="mt-10 grid gap-10 sm:grid-cols-2">
+    {
+      sorted.map((post) => (
+        <li>
+          <a href={`${import.meta.env.BASE_URL}/blog/${post.data.slug}`} class="group block">
+            <img
+              src={post.data.heroImage}
+              alt={post.data.title}
+              class="aspect-video w-full rounded-lg object-cover"
+              loading="lazy"
+            />
+            <h2 class="mt-4 text-xl font-semibold text-slate-900 group-hover:underline">
+              {post.data.title}
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              {dateFormatter.format(post.data.date)} &middot; {post.data.readTime}
+            </p>
+            <p class="mt-2 text-sm text-slate-600">{post.data.description}</p>
+            <ul class="mt-3 flex flex-wrap gap-2">
+              {post.data.categories.map((c) => (
+                <li class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Layout>

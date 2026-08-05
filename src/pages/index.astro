@@ -1,5 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import WorldMap from "../components/WorldMap.astro";
+import IndiaMap from "../components/IndiaMap.astro";
 
 const title = "Travel Photographer & Consultant | AP Explores";
 const description =
@@ -36,7 +38,52 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
     </p>
   </section>
 
-  <section id="contact" class="mx-auto mt-20 max-w-lg scroll-mt-20">
+  <section class="mt-24">
+    <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900">Where I've Been</h2>
+        <p class="mt-4 text-slate-600">
+          From the Himalayas to the high streets of Europe, here's a running map of the corners of
+          the world I've had the chance to explore. Click a highlighted country to read the story
+          — or check back later, since more get added as I write them up.
+        </p>
+      </div>
+      <div class="lg:justify-self-end lg:w-full">
+        <WorldMap />
+      </div>
+    </div>
+  </section>
+
+  <section class="mt-24">
+    <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
+      <div>
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+          Exploring India, State by State
+        </h2>
+        <p class="mt-4 text-slate-600">
+          As an Indian, exploring every state and union territory of my own country matters just
+          as much to me as chasing passport stamps abroad. Here's how far I've gotten so far.
+        </p>
+      </div>
+      <div class="lg:justify-self-end lg:w-full">
+        <IndiaMap />
+      </div>
+    </div>
+    <p class="mt-4 text-right text-xs text-slate-400">
+      Map data by
+      <a
+        href="https://github.com/VictorCazanave/svg-maps"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline hover:text-slate-600"
+      >
+        svg-maps
+      </a>
+      (CC BY 4.0)
+    </p>
+  </section>
+
+  <section id="contact" class="mx-auto mt-24 max-w-lg scroll-mt-20">
     <h2 class="text-center text-2xl font-bold tracking-tight text-slate-900">CONTACT</h2>
     <form
       id="contact-form"

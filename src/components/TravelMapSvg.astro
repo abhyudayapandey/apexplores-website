@@ -1,0 +1,119 @@
+---
+export interface MapRegion {
+  key: string;
+  name: string;
+  path: string;
+  visited: boolean;
+  href?: string;
+}
+
+interface Props {
+  viewBox: string;
+  label: string;
+  regions: MapRegion[];
+  mapKey: string;
+}
+
+const { viewBox, label, regions, mapKey } = Astro.props;
+---
+
+<div class="travel-map-card" data-map={mapKey}>
+  <svg viewBox={viewBox} role="img" aria-label={label} class="travel-map">
+    {
+      regions.map((region) =>
+        region.visited ? (
+          <a href={region.href} class="region visited" data-name={region.name}>
+            <path d={region.path} />
+          </a>
+        ) : (
+          <path d={region.path} class="region unvisited" aria-label={region.name} />
+        )
+      )
+    }
+  </svg>
+  <div class="map-tooltip" data-tooltip hidden></div>
+</div>
+
+<style>
+  .travel-map-card {
+    position: relative;
+    background: var(--color-paper);
+    border: 1px solid var(--color-paper-border);
+    border-radius: 0.75rem;
+    padding: 1rem;
+  }
+
+  .travel-map {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .region.unvisited {
+    fill: var(--color-map-neutral);
+    stroke: var(--color-paper);
+    stroke-width: 0.6;
+  }
+
+  a.region.visited path {
+    fill: var(--color-rust);
+    stroke: var(--color-paper);
+    stroke-width: 0.6;
+    transition: fill 0.15s ease;
+  }
+
+  a.region.visited {
+    cursor: pointer;
+  }
+
+  a.region.visited:hover path,
+  a.region.visited:focus-visible path {
+    fill: var(--color-rust-hover);
+  }
+
+  a.region.visited:focus-visible {
+    outline: 2px solid var(--color-indigo);
+    outline-offset: 2px;
+  }
+
+  .map-tooltip {
+    position: fixed;
+    z-index: 50;
+    pointer-events: none;
+    background: var(--color-indigo);
+    color: var(--color-paper);
+    font-family: var(--font-space-mono);
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+    transform: translate(-50%, -140%);
+  }
+
+  .map-tooltip[hidden] {
+    display: none;
+  }
+</style>
+
+<script>
+  const cards = document.querySelectorAll<HTMLElement>(".travel-map-card");
+  cards.forEach((card) => {
+    const tooltip = card.querySelector<HTMLElement>("[data-tooltip]");
+    if (!tooltip) return;
+    const regions = card.querySelectorAll<HTMLElement>(".region.visited");
+    regions.forEach((region) => {
+      const name = region.dataset.name ?? "";
+      region.addEventListener("pointerenter", () => {
+        tooltip.textContent = name;
+        tooltip.hidden = false;
+      });
+      region.addEventListener("pointermove", (event) => {
+        tooltip.style.left = `${event.clientX}px`;
+        tooltip.style.top = `${event.clientY}px`;
+      });
+      region.addEventListener("pointerleave", () => {
+        tooltip.hidden = true;
+      });
+    });
+  });
+</script>
