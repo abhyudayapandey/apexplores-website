@@ -38,7 +38,15 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
 
   <section id="contact" class="mx-auto mt-20 max-w-lg scroll-mt-20">
     <h2 class="text-center text-2xl font-bold tracking-tight text-slate-900">CONTACT</h2>
-    <form id="contact-form" class="mt-8 space-y-4" data-confirm="Thanks for submitting!">
+    <form
+      id="contact-form"
+      name="contact"
+      method="POST"
+      data-netlify="true"
+      class="mt-8 space-y-4"
+      data-confirm="Thanks for submitting!"
+    >
+      <input type="hidden" name="form-name" value="contact" />
       <div>
         <label for="name" class="block text-sm font-medium text-slate-700">Name</label>
         <input
@@ -87,11 +95,26 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
 
   <script>
     const form = document.querySelector<HTMLFormElement>("#contact-form");
-    form?.addEventListener("submit", (event) => {
+    form?.addEventListener("submit", async (event) => {
       event.preventDefault();
       const status = form.querySelector<HTMLElement>("[data-status]");
-      if (status) status.textContent = form.dataset.confirm ?? "";
-      form.reset();
+      const params = new URLSearchParams();
+      for (const [key, value] of new FormData(form).entries()) {
+        params.append(key, value.toString());
+      }
+      try {
+        await fetch("/", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: params.toString(),
+        });
+        if (status) status.textContent = form.dataset.confirm ?? "";
+        form.reset();
+      } catch {
+        if (status) {
+          status.textContent = "Something went wrong. Please email me directly instead.";
+        }
+      }
     });
   </script>
 </Layout>
