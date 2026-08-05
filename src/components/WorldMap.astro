@@ -1,5 +1,6 @@
 ---
 import worldMap from "@svg-maps/world";
+import indiaMap from "@svg-maps/india";
 import { visitedCountries } from "../data/travel-map";
 import TravelMapSvg, { type MapRegion } from "./TravelMapSvg.astro";
 
@@ -9,18 +10,67 @@ interface SvgMapLocation {
   path: string;
 }
 
+interface Props {
+  variant?: "card" | "banner";
+}
+
+const { variant = "card" } = Astro.props;
+
 const base = import.meta.env.BASE_URL;
 
-const regions: MapRegion[] = worldMap.locations.map((loc: SvgMapLocation) => {
-  const visited = visitedCountries[loc.id.toUpperCase()];
-  return {
-    key: loc.id,
-    name: visited ? visited.name : loc.name,
-    path: loc.path,
-    visited: Boolean(visited),
-    href: visited ? `${base}${visited.href ?? `/destinations/${visited.slug}`}` : undefined,
-  };
+/**
+ * @svg-maps/world draws India with a simplified boundary that clips Jammu &
+ * Kashmir's northern and eastern extent — it disagrees with the India-specific
+ * dataset used by IndiaMap, which has the correct boundary. Rather than ship
+ * two different India outlines on the same site, we substitute the world
+ * map's India polygon with the union of @svg-maps/india's state paths,
+ * scaled/positioned to fit the world map's coordinate space. The fit below
+ * was measured by rendering both datasets and reading their bounding boxes
+ * (India's full-country bbox vs. the world map's India bbox) — re-measure if
+ * either package is upgraded.
+ *
+ * Each state gets its own <path> (via MapRegion.paths, not a concatenated
+ * `d` string): a path's leading moveto is only treated as absolute when it's
+ * the first command of its own <path> element — the *implicit relative
+ * lineto* coordinate pairs that follow it stay relative regardless. Merging
+ * 36 states into one `d` string, or rewriting each leading "m" to "M", both
+ * corrupt those implicit pairs (small deltas get reinterpreted as absolute
+ * coordinates near the origin). Separate elements keep each state's own
+ * parsing context intact.
+ */
+const INDIA_FIT = { translateX: 668.7978, translateY: 356.8638, scale: 0.125336 };
+const BASE_STROKE_WIDTH = 0.6;
+const indiaPaths = (indiaMap.locations as SvgMapLocation[]).map((loc) => loc.path);
+
+const regions: MapRegion[] = worldMap.locations
+  .filter((loc: SvgMapLocation) => loc.id !== "in")
+  .map((loc: SvgMapLocation) => {
+    const visited = visitedCountries[loc.id.toUpperCase()];
+    return {
+      key: loc.id,
+      name: visited ? visited.name : loc.name,
+      path: loc.path,
+      visited: Boolean(visited),
+      href: visited ? `${base}${visited.href ?? `/destinations/${visited.slug}`}` : undefined,
+    };
+  });
+
+const india = visitedCountries.IN;
+regions.push({
+  key: "in",
+  name: india.name,
+  paths: indiaPaths,
+  visited: true,
+  href: `${base}${india.href ?? `/destinations/${india.slug}`}`,
+  transform: `translate(${INDIA_FIT.translateX} ${INDIA_FIT.translateY}) scale(${INDIA_FIT.scale})`,
+  strokeWidth: BASE_STROKE_WIDTH / INDIA_FIT.scale,
 });
 ---
 
-<TravelMapSvg viewBox={worldMap.viewBox} label={worldMap.label} regions={regions} mapKey="world" />
+<TravelMapSvg
+  viewBox={worldMap.viewBox}
+  label={worldMap.label}
+  regions={regions}
+  mapKey="world"
+  variant={variant}
+/>

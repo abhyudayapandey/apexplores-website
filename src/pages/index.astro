@@ -7,22 +7,32 @@ const title = "Travel Photographer & Consultant | AP Explores";
 const description =
   "I am Abhyudaya Pandey. apexplores my personal website. I am an explorer. See the world through my perspective - the places I have been to, the people I met, the food I enjoyed and the animals I loved. Contact for travel consultations. Travel stories in the blog. Photos in my portfolio.";
 const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb7960eff33b9a4~mv2.jpg";
+const base = import.meta.env.BASE_URL;
 ---
 
 <Layout title={title} description={description} ogImage={ogImage}>
-  <section class="mx-auto max-w-2xl text-center">
+  <div class="full-bleed">
+    <img
+      src={ogImage}
+      alt="A photograph from one of Abhyudaya's travels"
+      class="h-[45vh] w-full object-cover sm:h-[60vh]"
+    />
+  </div>
+
+  <section class="mx-auto mt-16 max-w-2xl text-center">
     <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
       Welcome to AP Explores!
     </h1>
     <h2 class="mt-4 text-lg font-semibold text-slate-700">Hi, I am Abhyudaya Pandey.</h2>
     <p class="mt-6 text-slate-600">
-      Just another engineer who is passionate about photography and traveling. I prefer being a
-      traveler and not a tourist. I enjoy traveling to off beat places or the "touristy" places in
-      off season. I don't believe in covering the famous spots, but interacting with the locals,
-      exploring the culture, knowing the history and understanding the environment.
+      Engineer by profession, wanderer by instinct. I'd rather be the traveler who gets lost in a
+      conversation with a local than the tourist ticking off landmarks. Off-season over peak
+      season, back lanes over headline attractions — I'm here for the culture, the history, and
+      the everyday rhythm of a place, not just the postcard shot.
     </p>
     <p class="mt-4 text-slate-600">
-      This site hosts the photographs that I have clicked and my travel blogs.
+      This site is where those trips live: the photographs, and the stories that didn't fit in a
+      caption.
     </p>
     <p class="mt-4 text-slate-600">
       For any queries or suggestions, feel free to contact me through the form below or follow me
@@ -31,7 +41,7 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
         href="https://instagram.com/apexplores"
         target="_blank"
         rel="noopener noreferrer"
-        class="font-medium text-slate-900 underline underline-offset-2"
+        class="font-medium text-[var(--color-rust)] underline underline-offset-2"
       >
         @apexplores
       </a>
@@ -39,31 +49,38 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
   </section>
 
   <section class="mt-24">
-    <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
-      <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">Where I've Been</h2>
-        <p class="mt-4 text-slate-600">
-          From the Himalayas to the high streets of Europe, here's a running map of the corners of
-          the world I've had the chance to explore. Click a highlighted country to read the story
-          — or check back later, since more get added as I write them up.
-        </p>
-      </div>
-      <div class="lg:justify-self-end lg:w-full">
-        <WorldMap />
-      </div>
+    <div class="mx-auto max-w-2xl text-center">
+      <h2 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
+        Where I've Been
+      </h2>
+      <p class="mt-4 text-slate-600">
+        From the Himalayas to the high streets of Europe, here's a running map of the corners of
+        the world I've had the chance to explore. Click a highlighted country to read the story —
+        or check back later, since more get added as I write them up.
+      </p>
     </div>
   </section>
+
+  <div class="full-bleed mt-10">
+    <WorldMap variant="banner" />
+  </div>
 
   <section class="mt-24">
     <div class="grid gap-10 lg:grid-cols-2 lg:items-center">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-slate-900">
+        <h2 class="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
           Exploring India, State by State
         </h2>
         <p class="mt-4 text-slate-600">
           As an Indian, exploring every state and union territory of my own country matters just
           as much to me as chasing passport stamps abroad. Here's how far I've gotten so far.
         </p>
+        <a
+          href={`${base}/destinations/india`}
+          class="mt-4 inline-block font-medium text-[var(--color-rust)] underline underline-offset-2 hover:text-[var(--color-rust-hover)]"
+        >
+          View the full state map &rarr;
+        </a>
       </div>
       <div class="lg:justify-self-end lg:w-full">
         <IndiaMap />
@@ -126,7 +143,7 @@ const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb79
       </div>
       <button
         type="submit"
-        class="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white transition-colors hover:bg-slate-700"
+        class="w-full rounded-md bg-[var(--color-rust)] px-4 py-2 font-medium text-white transition-colors hover:bg-[var(--color-rust-hover)]"
       >
         Submit
       </button>

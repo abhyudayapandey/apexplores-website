@@ -2,9 +2,22 @@
 export interface MapRegion {
   key: string;
   name: string;
-  path: string;
+  /** A single path's `d` string. Use `paths` instead for a region assembled from multiple independent path strings. */
+  path?: string;
+  /**
+   * Multiple independent path `d` strings, rendered as separate <path> elements.
+   * Required when combining path data from more than one source, since each
+   * <path> needs its own parsing context — merging separate strings into one
+   * `d` attribute breaks the implicit-relative-lineto coordinates that follow
+   * each string's leading moveto command.
+   */
+  paths?: string[];
   visited: boolean;
   href?: string;
+  /** SVG transform applied to a wrapping <g>, for regions assembled from a different coordinate space. */
+  transform?: string;
+  /** Overrides the default stroke width, to compensate for a region-specific transform's scale. */
+  strokeWidth?: number;
 }
 
 interface Props {
@@ -12,21 +25,36 @@ interface Props {
   label: string;
   regions: MapRegion[];
   mapKey: string;
+  variant?: "card" | "banner";
 }
 
-const { viewBox, label, regions, mapKey } = Astro.props;
+const { viewBox, label, regions, mapKey, variant = "card" } = Astro.props;
 ---
 
-<div class="travel-map-card" data-map={mapKey}>
+<div class="travel-map-card" data-map={mapKey} data-variant={variant}>
   <svg viewBox={viewBox} role="img" aria-label={label} class="travel-map">
     {
       regions.map((region) =>
         region.visited ? (
           <a href={region.href} class="region visited" data-name={region.name}>
-            <path d={region.path} />
+            <g transform={region.transform}>
+              <g class="hover-scale">
+                {(region.paths ?? [region.path]).map((d) => (
+                  <path
+                    d={d}
+                    style={region.strokeWidth ? `stroke-width:${region.strokeWidth}` : undefined}
+                  />
+                ))}
+              </g>
+            </g>
           </a>
         ) : (
-          <path d={region.path} class="region unvisited" aria-label={region.name} />
+          <path
+            d={region.path}
+            transform={region.transform}
+            class="region unvisited"
+            aria-label={region.name}
+          />
         )
       )
     }
@@ -43,10 +71,31 @@ const { viewBox, label, regions, mapKey } = Astro.props;
     padding: 1rem;
   }
 
+  .travel-map-card[data-variant="banner"] {
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    padding: 2rem 1.5rem;
+  }
+
   .travel-map {
     width: 100%;
     height: auto;
     display: block;
+  }
+
+  @media (min-width: 1024px) {
+    .travel-map-card[data-variant="banner"] {
+      min-height: 50vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .travel-map-card[data-variant="banner"] .travel-map {
+      max-width: 1600px;
+      margin: 0 auto;
+    }
   }
 
   .region.unvisited {
@@ -62,6 +111,21 @@ const { viewBox, label, regions, mapKey } = Astro.props;
     transition: fill 0.15s ease;
   }
 
+  /*
+   * The hover-scale effect targets an inner <g class="hover-scale">, never
+   * the outer positioning <g> (which carries an SVG `transform` attribute
+   * for regions assembled from a different coordinate space, like India on
+   * the world map). Putting any CSS `transform`-related property on that
+   * outer <g> — even just `transition: transform` — makes the browser treat
+   * CSS as authoritative for `transform` and silently drop the attribute's
+   * translate/scale, even while at rest with no active hover.
+   */
+  .hover-scale {
+    transition: transform 0.15s ease;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
   a.region.visited {
     cursor: pointer;
   }
@@ -69,6 +133,11 @@ const { viewBox, label, regions, mapKey } = Astro.props;
   a.region.visited:hover path,
   a.region.visited:focus-visible path {
     fill: var(--color-rust-hover);
+  }
+
+  a.region.visited:hover .hover-scale,
+  a.region.visited:focus-visible .hover-scale {
+    transform: scale(1.08);
   }
 
   a.region.visited:focus-visible {

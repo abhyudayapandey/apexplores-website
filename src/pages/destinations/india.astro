@@ -1,0 +1,40 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import IndiaMap from "../../components/IndiaMap.astro";
+
+const title = "Exploring India, State by State | AP Explores";
+const description =
+  "As an Indian, exploring every state and union territory of my own country matters just as much to me as chasing passport stamps abroad. Here's how far I've gotten so far.";
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title={title} description={description}>
+  <a href={`${base}/`} class="text-sm font-medium text-slate-500 hover:text-slate-900">
+    &larr; Back to Home
+  </a>
+
+  <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+    Exploring India, State by State
+  </h1>
+  <p class="mt-4 max-w-2xl text-slate-600">{description}</p>
+  <p class="mt-2 max-w-2xl text-slate-600">
+    Every highlighted state or union territory below links to its story — or, if I haven't written
+    it up yet, a place to leave your email so you'll know when I do.
+  </p>
+
+  <div class="mt-10">
+    <IndiaMap />
+  </div>
+  <p class="mt-4 text-right text-xs text-slate-400">
+    Map data by
+    <a
+      href="https://github.com/VictorCazanave/svg-maps"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="underline hover:text-slate-600"
+    >
+      svg-maps
+    </a>
+    (CC BY 4.0)
+  </p>
+</Layout>
