@@ -1,0 +1,97 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const title = "Travel Photographer & Consultant | AP Explores";
+const description =
+  "I am Abhyudaya Pandey. apexplores my personal website. I am an explorer. See the world through my perspective - the places I have been to, the people I met, the food I enjoyed and the animals I loved. Contact for travel consultations. Travel stories in the blog. Photos in my portfolio.";
+const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb7960eff33b9a4~mv2.jpg";
+---
+
+<Layout title={title} description={description} ogImage={ogImage}>
+  <section class="mx-auto max-w-2xl text-center">
+    <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+      Welcome to AP Explores!
+    </h1>
+    <h2 class="mt-4 text-lg font-semibold text-slate-700">Hi, I am Abhyudaya Pandey.</h2>
+    <p class="mt-6 text-slate-600">
+      Just another engineer who is passionate about photography and traveling. I prefer being a
+      traveler and not a tourist. I enjoy traveling to off beat places or the "touristy" places in
+      off season. I don't believe in covering the famous spots, but interacting with the locals,
+      exploring the culture, knowing the history and understanding the environment.
+    </p>
+    <p class="mt-4 text-slate-600">
+      This site hosts the photographs that I have clicked and my travel blogs.
+    </p>
+    <p class="mt-4 text-slate-600">
+      For any queries or suggestions, feel free to contact me through the form below or follow me
+      on my Instagram:
+      <a
+        href="https://instagram.com/apexplores"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-medium text-slate-900 underline underline-offset-2"
+      >
+        @apexplores
+      </a>
+    </p>
+  </section>
+
+  <section id="contact" class="mx-auto mt-20 max-w-lg scroll-mt-20">
+    <h2 class="text-center text-2xl font-bold tracking-tight text-slate-900">CONTACT</h2>
+    <form id="contact-form" class="mt-8 space-y-4" data-confirm="Thanks for submitting!">
+      <div>
+        <label for="name" class="block text-sm font-medium text-slate-700">Name</label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          required
+          class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+        />
+      </div>
+      <div>
+        <label for="email" class="block text-sm font-medium text-slate-700">Email</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+        />
+      </div>
+      <div>
+        <label for="message" class="block text-sm font-medium text-slate-700">Message</label>
+        <textarea
+          id="message"
+          name="message"
+          rows="4"
+          required
+          class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+        ></textarea>
+      </div>
+      <button
+        type="submit"
+        class="w-full rounded-md bg-slate-900 px-4 py-2 font-medium text-white transition-colors hover:bg-slate-700"
+      >
+        Submit
+      </button>
+      <p data-status class="text-center text-sm font-medium text-slate-700"></p>
+    </form>
+    <p class="mt-6 text-center text-sm text-slate-500">
+      Or email me directly at
+      <a href="mailto:pabhyudaya@gmail.com" class="font-medium text-slate-900 underline underline-offset-2">
+        pabhyudaya@gmail.com
+      </a>
+    </p>
+  </section>
+
+  <script>
+    const form = document.querySelector<HTMLFormElement>("#contact-form");
+    form?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const status = form.querySelector<HTMLElement>("[data-status]");
+      if (status) status.textContent = form.dataset.confirm ?? "";
+      form.reset();
+    });
+  </script>
+</Layout>

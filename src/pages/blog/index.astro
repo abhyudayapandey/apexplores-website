@@ -1,0 +1,52 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const title = "Blog | AP Explores";
+const description =
+  "Blogs written by me on the travels that I have been on. These include the intinerary, food, culture and document informations (if any needed) along with photos and videos of the trip.";
+
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+---
+
+<Layout title={title} description={description}>
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">Blog</h1>
+  <p class="mt-2 text-slate-600">{description}</p>
+
+  <ul class="mt-10 grid gap-10 sm:grid-cols-2">
+    {posts.map((post) => (
+      <li>
+        <a href={`/blog/${post.data.slug}`} class="group block">
+          <img
+            src={post.data.heroImage}
+            alt={post.data.title}
+            class="aspect-video w-full rounded-lg object-cover"
+            loading="lazy"
+          />
+          <h2 class="mt-4 text-xl font-semibold text-slate-900 group-hover:underline">
+            {post.data.title}
+          </h2>
+          <p class="mt-1 text-sm text-slate-500">
+            {dateFormatter.format(post.data.date)} &middot; {post.data.readTime}
+          </p>
+          <p class="mt-2 text-sm text-slate-600">{post.data.description}</p>
+          <ul class="mt-3 flex flex-wrap gap-2">
+            {post.data.categories.map((category) => (
+              <li class="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                {category}
+              </li>
+            ))}
+          </ul>
+        </a>
+      </li>
+    ))}
+  </ul>
+</Layout>

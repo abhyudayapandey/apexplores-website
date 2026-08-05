@@ -1,0 +1,81 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  ogImage?: string;
+}
+
+const { title, description, ogImage } = Astro.props;
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/blog", label: "Blog" },
+  { href: "/albums", label: "Albums" },
+  { href: "/#contact", label: "Contact" },
+];
+
+const socialLinks = [
+  { href: "http://instagram.com/abhyudaya_pandey", label: "Instagram" },
+  { href: "https://www.facebook.com/niel.cullen", label: "Facebook" },
+  { href: "https://www.youtube.com/channel/UCaRqN1w0AAKN63I39mSk1Hg", label: "YouTube" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+  </head>
+  <body class="flex min-h-screen flex-col bg-white text-slate-800">
+    <header class="border-b border-slate-200">
+      <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+        <a href="/" class="text-xl font-bold tracking-tight text-slate-900">AP Explores</a>
+        <nav>
+          <ul class="flex gap-6 text-sm font-medium text-slate-600">
+            {navLinks.map((link) => (
+              <li>
+                <a href={link.href} class="transition-colors hover:text-slate-900">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <slot />
+    </main>
+
+    <footer class="border-t border-slate-200">
+      <div class="mx-auto flex max-w-5xl flex-col items-center gap-4 px-6 py-8 text-sm text-slate-500 sm:flex-row sm:justify-between">
+        <p>&copy; {new Date().getFullYear()} by Abhyudaya Pandey.</p>
+        <ul class="flex gap-5">
+          {socialLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="transition-colors hover:text-slate-900"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>
