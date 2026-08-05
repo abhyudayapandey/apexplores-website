@@ -7,7 +7,7 @@ export interface VisitedPlace {
 
 /** Visited countries on the world map, keyed by ISO 3166-1 alpha-2 code (matches @svg-maps/world location ids). */
 export const visitedCountries: Record<string, VisitedPlace> = {
-  IN: { name: "India", slug: "india" },
+  IN: { name: "India", slug: "india", href: "/destinations/india" },
   NP: { name: "Nepal", slug: "nepal" },
   BT: { name: "Bhutan", slug: "bhutan", href: "/blog/bhutan-the-land-of-the-thunder-dragon" },
   LK: { name: "Sri Lanka", slug: "sri-lanka" },
