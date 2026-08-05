@@ -2,6 +2,7 @@
 import indiaMap from "@svg-maps/india";
 import { visitedStates } from "../data/travel-map";
 import TravelMapSvg, { type MapRegion } from "./TravelMapSvg.astro";
+import { withBase } from "../lib/url";
 
 interface SvgMapLocation {
   id: string;
@@ -18,7 +19,9 @@ const regions: MapRegion[] = indiaMap.locations.map((loc: SvgMapLocation) => {
     name: loc.name,
     path: loc.path,
     visited: Boolean(visited),
-    href: visited ? `${base}${visited.href ?? `/destinations/${visited.slug}`}` : undefined,
+    href: visited
+      ? withBase(visited.href ?? `/destinations/${visited.slug}`, base)
+      : undefined,
   };
 });
 ---

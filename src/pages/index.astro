@@ -2,15 +2,29 @@
 import Layout from "../layouts/Layout.astro";
 import WorldMap from "../components/WorldMap.astro";
 import IndiaMap from "../components/IndiaMap.astro";
+import { PRODUCTION_ORIGIN } from "../lib/seo";
+import { withBase } from "../lib/url";
 
 const title = "Travel Photographer & Consultant | AP Explores";
 const description =
   "I am Abhyudaya Pandey. apexplores my personal website. I am an explorer. See the world through my perspective - the places I have been to, the people I met, the food I enjoyed and the animals I loved. Contact for travel consultations. Travel stories in the blog. Photos in my portfolio.";
 const ogImage = "https://static.wixstatic.com/media/d10773_f1f0cb91d7654a31beb7960eff33b9a4~mv2.jpg";
 const base = import.meta.env.BASE_URL;
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Abhyudaya Pandey",
+  url: PRODUCTION_ORIGIN,
+  sameAs: [
+    "http://instagram.com/abhyudaya_pandey",
+    "https://www.facebook.com/niel.cullen",
+    "https://www.youtube.com/channel/UCaRqN1w0AAKN63I39mSk1Hg",
+  ],
+};
 ---
 
-<Layout title={title} description={description} ogImage={ogImage}>
+<Layout title={title} description={description} ogImage={ogImage} structuredData={personSchema}>
   <div class="full-bleed">
     <img
       src={ogImage}
@@ -76,7 +90,7 @@ const base = import.meta.env.BASE_URL;
           as much to me as chasing passport stamps abroad. Here's how far I've gotten so far.
         </p>
         <a
-          href={`${base}/destinations/india`}
+          href={withBase("/destinations/india", base)}
           class="mt-4 inline-block font-medium text-[var(--color-rust)] underline underline-offset-2 hover:text-[var(--color-rust-hover)]"
         >
           View the full state map &rarr;

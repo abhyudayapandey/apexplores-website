@@ -1,6 +1,9 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { withBase } from "../../../lib/url";
+
+const base = import.meta.env.BASE_URL;
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -30,10 +33,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 ---
 
 <Layout title={title} description={description}>
-  <a
-    href={`${import.meta.env.BASE_URL}/blog`}
-    class="text-sm font-medium text-slate-500 hover:text-slate-900"
-  >
+  <a href={withBase("/blog", base)} class="text-sm font-medium text-slate-500 hover:text-slate-900">
     &larr; Back to Blog
   </a>
   <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 capitalize">{category}</h1>
@@ -43,7 +43,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
     {
       sorted.map((post) => (
         <li>
-          <a href={`${import.meta.env.BASE_URL}/blog/${post.data.slug}`} class="group block">
+          <a href={withBase(`/blog/${post.data.slug}`, base)} class="group block">
             <img
               src={post.data.heroImage}
               alt={post.data.title}
