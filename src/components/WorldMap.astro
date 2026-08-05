@@ -1,0 +1,26 @@
+---
+import worldMap from "@svg-maps/world";
+import { visitedCountries } from "../data/travel-map";
+import TravelMapSvg, { type MapRegion } from "./TravelMapSvg.astro";
+
+interface SvgMapLocation {
+  id: string;
+  name: string;
+  path: string;
+}
+
+const base = import.meta.env.BASE_URL;
+
+const regions: MapRegion[] = worldMap.locations.map((loc: SvgMapLocation) => {
+  const visited = visitedCountries[loc.id.toUpperCase()];
+  return {
+    key: loc.id,
+    name: visited ? visited.name : loc.name,
+    path: loc.path,
+    visited: Boolean(visited),
+    href: visited ? `${base}${visited.href ?? `/destinations/${visited.slug}`}` : undefined,
+  };
+});
+---
+
+<TravelMapSvg viewBox={worldMap.viewBox} label={worldMap.label} regions={regions} mapKey="world" />

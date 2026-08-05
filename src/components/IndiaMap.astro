@@ -1,0 +1,26 @@
+---
+import indiaMap from "@svg-maps/india";
+import { visitedStates } from "../data/travel-map";
+import TravelMapSvg, { type MapRegion } from "./TravelMapSvg.astro";
+
+interface SvgMapLocation {
+  id: string;
+  name: string;
+  path: string;
+}
+
+const base = import.meta.env.BASE_URL;
+
+const regions: MapRegion[] = indiaMap.locations.map((loc: SvgMapLocation) => {
+  const visited = visitedStates[loc.name];
+  return {
+    key: loc.id,
+    name: loc.name,
+    path: loc.path,
+    visited: Boolean(visited),
+    href: visited ? `${base}${visited.href ?? `/destinations/${visited.slug}`}` : undefined,
+  };
+});
+---
+
+<TravelMapSvg viewBox={indiaMap.viewBox} label={indiaMap.label} regions={regions} mapKey="india" />

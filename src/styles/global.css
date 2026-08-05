@@ -1,1 +1,15 @@
 @import "tailwindcss";
+@import "@fontsource/space-mono/400.css";
+@import "@fontsource/space-mono/700.css";
+
+:root {
+  --color-paper: #f4eee1;
+  --color-paper-border: #e1d7c0;
+  --color-indigo: #2e2a63;
+  --color-indigo-soft: #4a4590;
+  --color-rust: #b4502c;
+  --color-rust-hover: #c96438;
+  --color-map-neutral: #e4ded2;
+  --color-map-neutral-stroke: #c9c1ae;
+  --font-space-mono: "Space Mono", ui-monospace, monospace;
+}
