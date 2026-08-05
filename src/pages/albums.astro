@@ -4,14 +4,35 @@ import Layout from "../layouts/Layout.astro";
 const title = "Albums | AP Explores";
 const description =
   "The 'Albums' page has my photos categorized based on the overall experience that I have had at various places i.e., the place, people, food and animals.";
+
+const photos = [
+  "https://static.wixstatic.com/media/d10773_42313f7ae0c749b99958c90b53ce1cdc~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_5afa24de98d443d5bfc152d6dded0398~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_8b836864275c468a9f6db6c8076f807b~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_6f9535d004b74b4e961025af9863c6aa~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_42eb0fb54a0243aaa37de7d517054369~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_e429df19d569474394b0646c86add7d7~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_26aabe1d5f044cfea87da64c317b451b~mv2.jpg",
+  "https://static.wixstatic.com/media/d10773_6a08c27059d349499cd95e1df6aedeea~mv2.jpg",
+];
 ---
 
 <Layout title={title} description={description}>
-  <div class="flex min-h-[50vh] flex-col items-center justify-center text-center">
-    <h1 class="text-3xl font-bold tracking-tight text-slate-900">Albums</h1>
-    <p class="mt-4 max-w-md text-slate-600">
-      Photo albums are coming soon. Check back for a gallery of the places, people, food and
-      animals I've encountered along the way.
-    </p>
-  </div>
+  <h1 class="text-3xl font-bold tracking-tight text-slate-900">Albums</h1>
+  <p class="mt-2 max-w-2xl text-slate-600">{description}</p>
+
+  <ul class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+    {photos.map((photo, index) => (
+      <li>
+        <a href={photo} target="_blank" rel="noopener noreferrer" class="block">
+          <img
+            src={photo}
+            alt={`Travel photo ${index + 1}`}
+            loading="lazy"
+            class="aspect-square w-full rounded-lg object-cover transition-opacity hover:opacity-90"
+          />
+        </a>
+      </li>
+    ))}
+  </ul>
 </Layout>
