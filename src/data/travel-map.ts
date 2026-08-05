@@ -9,7 +9,7 @@ export interface VisitedPlace {
 export const visitedCountries: Record<string, VisitedPlace> = {
   IN: { name: "India", slug: "india", href: "/destinations/india" },
   NP: { name: "Nepal", slug: "nepal" },
-  BT: { name: "Bhutan", slug: "bhutan", href: "/blog/bhutan-the-land-of-the-thunder-dragon" },
+  BT: { name: "Bhutan", slug: "bhutan", href: "/blog/categories/bhutan" },
   LK: { name: "Sri Lanka", slug: "sri-lanka" },
   ID: { name: "Indonesia", slug: "indonesia" },
   VN: { name: "Vietnam", slug: "vietnam" },
@@ -40,7 +40,7 @@ export const visitedStates: Record<string, VisitedPlace> = {
   "Himachal Pradesh": {
     name: "Himachal Pradesh",
     slug: "himachal-pradesh",
-    href: "/blog/the-busiest-82-hours-of-my-life-yet",
+    href: "/blog/categories/himachal-pradesh",
   },
   Karnataka: { name: "Karnataka", slug: "karnataka" },
   Kerala: { name: "Kerala", slug: "kerala" },
@@ -53,11 +53,11 @@ export const visitedStates: Record<string, VisitedPlace> = {
   "Tamil Nadu": {
     name: "Tamil Nadu",
     slug: "tamil-nadu",
-    href: "/blog/backpacking-to-the-tip-of-india-in-inr-5-000",
+    href: "/blog/categories/tamil-nadu",
   },
   Telangana: { name: "Telangana", slug: "telangana" },
   Uttarakhand: { name: "Uttarakhand", slug: "uttarakhand" },
-  "West Bengal": { name: "West Bengal", slug: "west-bengal", href: "/blog/wfh-work-from-himalayas" },
+  "West Bengal": { name: "West Bengal", slug: "west-bengal", href: "/blog/categories/west-bengal" },
   Chandigarh: { name: "Chandigarh", slug: "chandigarh" },
   Delhi: { name: "Delhi", slug: "delhi" },
   Puducherry: { name: "Puducherry", slug: "puducherry" },
