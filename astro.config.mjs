@@ -5,7 +5,8 @@ import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  site: "https://apexplores.com",
+  site: "https://abhyudayapandey.github.io",
+  base: "/apexplores-website",
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
