@@ -2,16 +2,7 @@
 export interface MapRegion {
   key: string;
   name: string;
-  /** A single path's `d` string. Use `paths` instead for a region assembled from multiple independent path strings. */
-  path?: string;
-  /**
-   * Multiple independent path `d` strings, rendered as separate <path> elements.
-   * Required when combining path data from more than one source, since each
-   * <path> needs its own parsing context — merging separate strings into one
-   * `d` attribute breaks the implicit-relative-lineto coordinates that follow
-   * each string's leading moveto command.
-   */
-  paths?: string[];
+  path: string;
   visited: boolean;
   href?: string;
   /** SVG transform applied to a wrapping <g>, for regions assembled from a different coordinate space. */
@@ -39,12 +30,10 @@ const { viewBox, label, regions, mapKey, variant = "card" } = Astro.props;
           <a href={region.href} class="region visited" data-name={region.name}>
             <g transform={region.transform}>
               <g class="hover-scale">
-                {(region.paths ?? [region.path]).map((d) => (
-                  <path
-                    d={d}
-                    style={region.strokeWidth ? `stroke-width:${region.strokeWidth}` : undefined}
-                  />
-                ))}
+                <path
+                  d={region.path}
+                  style={region.strokeWidth ? `stroke-width:${region.strokeWidth}` : undefined}
+                />
               </g>
             </g>
           </a>

@@ -19,6 +19,7 @@
     "@svg-maps/world": "^2.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
+    "polygon-clipping": "^0.15.7",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
