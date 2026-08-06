@@ -27,7 +27,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { combine, parseShp, parseDbf } from "shpjs";
-import { geoPath, geoEquirectangular } from "d3-geo";
+import { geoPath, geoMercator } from "d3-geo";
 import topojsonServer from "topojson-server";
 import topojsonSimplify from "topojson-simplify";
 import topojsonClient from "topojson-client";
@@ -90,11 +90,32 @@ for (const f of fc.features) {
   if (bbox) f.geometry = cropToBBox(f.geometry, bbox);
 }
 
+// Mercator, cropped to a -56°/74° latitude band and fit to the old
+// @svg-maps/world aspect ratio (1010x666, ~1.517). A full unclipped
+// equirectangular projection stretches high-latitude landmasses (Canada,
+// Russia, northern Europe) horizontally, since 1° of longitude occupies
+// the same pixel width regardless of latitude; Mercator doesn't have that
+// artifact, and cropping well short of its own polar singularity keeps its
+// (smaller, but real) opposite distortion in check.
 const WIDTH = 1010;
-const HEIGHT = 505;
-const projection = geoEquirectangular()
-  .scale(WIDTH / (2 * Math.PI))
-  .translate([WIDTH / 2, HEIGHT / 2]);
+const HEIGHT = 666;
+const clipBox = {
+  type: "Feature",
+  properties: {},
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [-180, -56],
+        [180, -56],
+        [180, 74],
+        [-180, 74],
+        [-180, -56],
+      ],
+    ],
+  },
+};
+const projection = geoMercator().fitSize([WIDTH, HEIGHT], clipBox);
 const svgPath = geoPath(projection);
 
 function resolveCode(props) {
