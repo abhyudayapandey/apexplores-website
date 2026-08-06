@@ -5,7 +5,7 @@ export interface VisitedPlace {
   href?: string;
 }
 
-/** Visited countries on the world map, keyed by ISO 3166-1 alpha-2 code (matches @svg-maps/world location ids). */
+/** Visited countries on the world map, keyed by ISO 3166-1 alpha-2 code (matches src/data/world-map.ts location ids). */
 export const visitedCountries: Record<string, VisitedPlace> = {
   IN: { name: "India", slug: "india", href: "/destinations/india" },
   NP: { name: "Nepal", slug: "nepal" },
