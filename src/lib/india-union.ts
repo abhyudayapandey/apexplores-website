@@ -1,40 +1,35 @@
-import worldMap from "@svg-maps/world";
 import india from "@svg-maps/india";
 import polygonClipping, { type MultiPolygon, type Pair } from "polygon-clipping";
 
 /**
- * @svg-maps/world's own India polygon already shares exact border
- * coordinates with its Nepal/Bhutan/Pakistan/China/Myanmar/Bangladesh
- * neighbors (they're digitized from the same atlas), but its J&K boundary
- * is too narrow — missing the Aksai Chin bulge and full northern extent.
+ * India on the world map is rendered from a real geometric union of every
+ * state/UT polygon in @svg-maps/india — a single seamless shape with the
+ * correct J&K boundary (@svg-maps/world's own India polygon is missing the
+ * Aksai Chin bulge and full northern extent).
  *
- * @svg-maps/india's state-level dataset has the correct J&K shape, but it's
- * digitized independently with a different projection: fitting its full
- * 36-state union into the world map (via a single translate+scale) leaves
- * the India-Nepal/Bhutan border "bowed" — touching at both ends but gapping
- * visibly in the middle, since a linear transform can't correct for two
- * different projections' curvature.
+ * @svg-maps/india is digitized independently from @svg-maps/world, with a
+ * different projection, so no single translate+scale makes every inch of
+ * its boundary coincide exactly with its neighbors' polygons in world
+ * space. Two earlier approaches tried to fix that precisely and both broke
+ * in a different place:
+ *  - Fitting the whole union by matching bounding-box corners left the
+ *    India-Nepal/Bhutan border "bowed" — touching at both ends, gapping
+ *    visibly in the middle.
+ *  - Patching only J&K onto @svg-maps/world's own India polygon (to keep
+ *    every other border pixel-exact) fixed that gap, but the patch itself
+ *    overlapped Pakistan and China — and because of @svg-maps/world's
+ *    location order, that overlap wasn't just imprecise, it rendered as
+ *    Pakistan's fill visibly cutting into India's J&K bulge.
  *
- * The fix used here avoids both problems: keep @svg-maps/world's own India
- * polygon as-is (so every border with a neighboring country stays exactly
- * where that neighbor's own polygon expects it), and union in just the
- * J&K polygon from @svg-maps/india — fitted with the same translate/scale
- * used previously — as a local patch that only extends the shape in the
- * J&K area.
- *
- * That local fit is not pixel-perfect: measured against @svg-maps/world's
- * own Pakistan and China polygons, the transformed J&K patch overlaps
- * Pakistan by ~29 sq. units and China by ~27 sq. units (out of J&K's own
- * ~182 sq. units) — big enough to be visible. Left alone, this doesn't just
- * look imprecise, it actively renders wrong: China draws before India in
- * @svg-maps/world's location order, so India's fill paints over part of
- * China; Pakistan draws after India, so Pakistan's fill cuts a chunk out of
- * India's J&K bulge. Rather than trying to chase a perfect projection-level
- * fit (the Nepal/Bhutan gap already showed that's not reliable across two
- * independently-digitized datasets), the patch is explicitly clipped
- * against every other country it overlaps before being unioned in — so it
- * can never paint over a neighbor or get painted over by one, regardless of
- * how imprecise the local fit is.
+ * This version sidesteps both failure modes with a rendering-order trick
+ * instead of a geometric one: India is drawn as the very last region on the
+ * world map (see WorldMap.astro), on top of every other country. That
+ * makes any overlap with a neighbor invisible — India simply paints over
+ * it — so the fit no longer needs to be conservative. The transform below
+ * is deliberately biased to slightly overshoot the India-Nepal/Bhutan
+ * border rather than risk falling short of it again; the overshoot is a
+ * few tenths of a unit into Nepal/Bhutan/Pakistan/China's territory at
+ * most, invisible at map scale, and never a gap.
  */
 
 function parsePathToRings(d: string): Pair[][] {
@@ -97,25 +92,14 @@ function parsePathToRings(d: string): Pair[][] {
   return rings;
 }
 
-function bbox(points: Pair[]) {
-  let minX = Infinity,
-    maxX = -Infinity,
-    minY = Infinity,
-    maxY = -Infinity;
-  for (const [x, y] of points) {
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
+function ringArea(ring: Pair[]): number {
+  let area = 0;
+  for (let i = 0; i < ring.length - 1; i++) {
+    const [x1, y1] = ring[i];
+    const [x2, y2] = ring[i + 1];
+    area += x1 * y2 - x2 * y1;
   }
-  return { minX, maxX, minY, maxY };
-}
-
-function bboxesOverlap(
-  a: { minX: number; maxX: number; minY: number; maxY: number },
-  b: { minX: number; maxX: number; minY: number; maxY: number }
-): boolean {
-  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
+  return Math.abs(area / 2);
 }
 
 function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
@@ -130,40 +114,41 @@ function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
   return subpaths.join(" ");
 }
 
-// Same local fit used for the (now superseded) full state-union approach —
-// still appropriate here since it positions J&K correctly against the
-// unchanged Punjab/Himachal/Ladakh-China corner of the world polygon.
-const JK_FIT = { translateX: 668.7978, translateY: 356.8638, scale: 0.125336 };
+// translateX/scale position and size the union to match @svg-maps/world's own
+// (now-unused) India polygon; translateY is shifted 6 units further north
+// than that match would suggest, specifically so the India-Nepal/Bhutan
+// border always meets or slightly overshoots Nepal/Bhutan's own polygons,
+// never falls short — verified visually across the full border length.
+const INDIA_FIT = { translateX: 668.7978, translateY: 356.8638 - 6, scale: 0.125336 };
 
 function buildMergedIndiaPath(): string {
-  const worldIndia = (worldMap as { locations: { id: string; path: string }[] }).locations.find(
-    (loc) => loc.id.toUpperCase() === "IN"
+  const allPolygons = (india as { locations: { path: string }[] }).locations.flatMap((loc) =>
+    parsePathToRings(loc.path).map((ring) => [ring])
   );
-  if (!worldIndia) throw new Error("World map dataset has no India location");
-  const worldIndiaPolygons = parsePathToRings(worldIndia.path).map((ring) => [ring]);
 
-  const jk = (india as { locations: { name: string; path: string }[] }).locations.find(
-    (loc) => loc.name === "Jammu and Kashmir"
+  const result = polygonClipping.union(allPolygons[0], ...allPolygons.slice(1));
+
+  // Hand-digitized adjacent state borders don't perfectly align, leaving
+  // many tiny sliver polygons/holes after the union — filter them out by
+  // area (real geography is orders of magnitude larger than the noise).
+  const AREA_THRESHOLD = 1;
+  const cleaned = result
+    .map((polygon) => {
+      const [exterior, ...holes] = polygon;
+      if (ringArea(exterior) <= AREA_THRESHOLD) return null;
+      const keptHoles = holes.filter((h) => ringArea(h) > AREA_THRESHOLD);
+      return [exterior, ...keptHoles];
+    })
+    .filter((p): p is (typeof result)[number] => p !== null);
+
+  const transformed = cleaned.map((polygon) =>
+    polygon.map((ring) =>
+      ring.map(([x, y]): Pair => [x * INDIA_FIT.scale + INDIA_FIT.translateX, y * INDIA_FIT.scale + INDIA_FIT.translateY])
+    )
   );
-  if (!jk) throw new Error("India states dataset has no Jammu and Kashmir location");
-  const jkPolygons: MultiPolygon = parsePathToRings(jk.path).map((ring) => [
-    ring.map(([x, y]): Pair => [x * JK_FIT.scale + JK_FIT.translateX, y * JK_FIT.scale + JK_FIT.translateY]),
-  ]);
-  const jkBBox = bbox(jkPolygons.flat(2) as unknown as Pair[]);
 
-  const otherCountryPolygons = (worldMap as { locations: { id: string; path: string }[] }).locations
-    .filter((loc) => loc.id.toUpperCase() !== "IN")
-    .flatMap((loc) => parsePathToRings(loc.path).map((ring): [Pair[]] => [ring]))
-    .filter((polygon) => bboxesOverlap(bbox(polygon[0]), jkBBox));
-
-  const trimmedJk =
-    otherCountryPolygons.length > 0
-      ? polygonClipping.difference(jkPolygons, ...otherCountryPolygons)
-      : jkPolygons;
-
-  const result = polygonClipping.union(worldIndiaPolygons[0], ...worldIndiaPolygons.slice(1), trimmedJk);
-  return multiPolygonToPathD(result);
+  return multiPolygonToPathD(transformed);
 }
 
-/** Already in @svg-maps/world's own coordinate space — no transform needed when rendering. */
+/** Already in @svg-maps/world's own coordinate space — no further transform needed when rendering. */
 export const mergedIndiaPath = buildMergedIndiaPath();

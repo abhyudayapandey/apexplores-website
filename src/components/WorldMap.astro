@@ -26,19 +26,34 @@ const base = import.meta.env.BASE_URL;
  * `mergedIndiaPath` is already expressed in @svg-maps/world's own coordinate
  * space, so it drops in exactly like every other country's path here — no
  * extra transform or stroke-width compensation needed.
+ *
+ * It's excluded from the main list and pushed on last, so it's always the
+ * final region drawn — on top of every other country. See india-union.ts
+ * for why that ordering matters: it's what lets the fit slightly overshoot
+ * a neighbor's border rather than risk falling short of it.
  */
-const regions: MapRegion[] = worldMap.locations.map((loc: SvgMapLocation) => {
-  const isIndia = loc.id.toUpperCase() === "IN";
-  const visited = visitedCountries[loc.id.toUpperCase()];
-  return {
-    key: loc.id,
-    name: visited ? visited.name : loc.name,
-    path: isIndia ? mergedIndiaPath : loc.path,
-    visited: Boolean(visited),
-    href: visited
-      ? withBase(visited.href ?? `/destinations/${visited.slug}`, base)
-      : undefined,
-  };
+const regions: MapRegion[] = worldMap.locations
+  .filter((loc: SvgMapLocation) => loc.id.toUpperCase() !== "IN")
+  .map((loc: SvgMapLocation) => {
+    const visited = visitedCountries[loc.id.toUpperCase()];
+    return {
+      key: loc.id,
+      name: visited ? visited.name : loc.name,
+      path: loc.path,
+      visited: Boolean(visited),
+      href: visited
+        ? withBase(visited.href ?? `/destinations/${visited.slug}`, base)
+        : undefined,
+    };
+  });
+
+const indiaVisited = visitedCountries.IN;
+regions.push({
+  key: "in",
+  name: indiaVisited.name,
+  path: mergedIndiaPath,
+  visited: true,
+  href: withBase(indiaVisited.href ?? `/destinations/${indiaVisited.slug}`, base),
 });
 ---
 
