@@ -1,15 +1,8 @@
 ---
-import worldMap from "@svg-maps/world";
+import { worldMap } from "../data/world-map";
 import { visitedCountries } from "../data/travel-map";
 import TravelMapSvg, { type MapRegion } from "./TravelMapSvg.astro";
 import { withBase } from "../lib/url";
-import { mergedIndiaPath } from "../lib/india-union";
-
-interface SvgMapLocation {
-  id: string;
-  name: string;
-  path: string;
-}
 
 interface Props {
   variant?: "card" | "banner";
@@ -20,40 +13,27 @@ const { variant = "card" } = Astro.props;
 const base = import.meta.env.BASE_URL;
 
 /**
- * India renders from `mergedIndiaPath` (see src/lib/india-union.ts) instead
- * of @svg-maps/world's own polygon: that dataset's J&K boundary is narrower
- * than reality (missing the Aksai Chin bulge and full northern extent).
- * `mergedIndiaPath` is already expressed in @svg-maps/world's own coordinate
- * space, so it drops in exactly like every other country's path here — no
- * extra transform or stroke-width compensation needed.
- *
- * It's excluded from the main list and pushed on last, so it's always the
- * final region drawn — on top of every other country. See india-union.ts
- * for why that ordering matters: it's what lets the fit slightly overshoot
- * a neighbor's border rather than risk falling short of it.
+ * worldMap (see src/data/world-map.ts) is generated from a single Natural
+ * Earth dataset where every country's shared borders are digitized once and
+ * reused by its neighbors — including India's, per India's own official
+ * boundary claim. That's what makes this reliable where the previous
+ * @svg-maps/world + merged-@svg-maps/india approach wasn't: there's no
+ * second, independently-digitized shape to reconcile against the rest of
+ * the map, so no border can gap or get clipped by a neighbor. India needs
+ * no special-casing here at all — it renders exactly like every other
+ * country.
  */
-const regions: MapRegion[] = worldMap.locations
-  .filter((loc: SvgMapLocation) => loc.id.toUpperCase() !== "IN")
-  .map((loc: SvgMapLocation) => {
-    const visited = visitedCountries[loc.id.toUpperCase()];
-    return {
-      key: loc.id,
-      name: visited ? visited.name : loc.name,
-      path: loc.path,
-      visited: Boolean(visited),
-      href: visited
-        ? withBase(visited.href ?? `/destinations/${visited.slug}`, base)
-        : undefined,
-    };
-  });
-
-const indiaVisited = visitedCountries.IN;
-regions.push({
-  key: "in",
-  name: indiaVisited.name,
-  path: mergedIndiaPath,
-  visited: true,
-  href: withBase(indiaVisited.href ?? `/destinations/${indiaVisited.slug}`, base),
+const regions: MapRegion[] = worldMap.locations.map((loc) => {
+  const visited = visitedCountries[loc.id.toUpperCase()];
+  return {
+    key: loc.id,
+    name: visited ? visited.name : loc.name,
+    path: loc.path,
+    visited: Boolean(visited),
+    href: visited
+      ? withBase(visited.href ?? `/destinations/${visited.slug}`, base)
+      : undefined,
+  };
 });
 ---
 
