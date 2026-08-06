@@ -56,6 +56,18 @@ const personSchema = {
         @apexplores
       </a>
     </p>
+    <p class="mt-4 text-slate-600">
+      Lately I've also been drawn to product management — specifically in travel, where the years
+      I've spent figuring out visas, budgets, and off-the-beaten-path routes across 20 countries
+      and every corner of India turn out to be surprisingly good training for understanding what
+      travelers actually need from a product. Curious where that goes &rarr;{" "}
+      <a
+        href={withBase("/now", base)}
+        class="font-medium text-[var(--color-rust)] underline underline-offset-2"
+      >
+        now
+      </a>.
+    </p>
   </section>
 
   <section class="mt-24">
@@ -140,6 +152,21 @@ const personSchema = {
           required
           class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
         />
+      </div>
+      <div>
+        <label for="topic" class="block text-sm font-medium text-slate-700">
+          What's this about? <span class="font-normal text-slate-400">(optional)</span>
+        </label>
+        <select
+          id="topic"
+          name="topic"
+          class="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 text-slate-900 shadow-sm focus:border-slate-500 focus:outline-none focus:ring-1 focus:ring-slate-500"
+        >
+          <option value="">Select an option</option>
+          <option value="Travel guide / trip planning">Travel guide / trip planning</option>
+          <option value="Product opportunities">Product opportunities</option>
+          <option value="Just saying hi">Just saying hi</option>
+        </select>
       </div>
       <div>
         <label for="message" class="block text-sm font-medium text-slate-700">Message</label>

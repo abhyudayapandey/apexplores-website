@@ -1,0 +1,51 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { withBase } from "../lib/url";
+
+const title = "Now | AP Explores";
+const description =
+  "What Abhyudaya Pandey is exploring right now: product management roles in travel.";
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title={title} description={description}>
+  <a href={withBase("/", base)} class="text-sm font-medium text-slate-500 hover:text-slate-900">
+    &larr; Back to Home
+  </a>
+
+  <h1 class="mt-4 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+    What I'm exploring right now
+  </h1>
+
+  <div class="mt-6 max-w-2xl space-y-4 text-slate-600">
+    <p>
+      Alongside this site and guiding travelers through India, I'm looking at product management
+      roles in travel.
+    </p>
+    <p>
+      Most travel PM postings ask for "travel background" assuming it means industry experience.
+      Mine looks different: 20 countries, every state and union territory in India, trips ranging
+      from a ₹5,000 backpacking run to the tip of India to guided stays in Goa — solo, with
+      friends, working remotely from the Himalayas mid-pandemic. That range means I've hit most of
+      the friction points a travel product is supposed to solve, from the user side, repeatedly.
+    </p>
+    <p>
+      If that's relevant to something you're building, I'd like to talk.{" "}
+      <a
+        href={withBase("/resume.pdf", base)}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-medium text-[var(--color-rust)] underline underline-offset-2 hover:text-[var(--color-rust-hover)]"
+      >
+        Resume
+      </a>{" "}
+      &middot;{" "}
+      <a
+        href={withBase("/#contact", base)}
+        class="font-medium text-[var(--color-rust)] underline underline-offset-2 hover:text-[var(--color-rust-hover)]"
+      >
+        Contact
+      </a>
+    </p>
+  </div>
+</Layout>
