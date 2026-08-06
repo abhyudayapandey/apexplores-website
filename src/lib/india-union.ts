@@ -1,12 +1,28 @@
+import worldMap from "@svg-maps/world";
 import india from "@svg-maps/india";
 import polygonClipping, { type MultiPolygon, type Pair } from "polygon-clipping";
 
 /**
- * Merges every India state/UT polygon from @svg-maps/india into a single
- * seamless shape via a real geometric union, instead of rendering each
- * state as a separate stroked path (visible seams) or falling back to
- * @svg-maps/world's own India polygon (incorrect, narrower J&K boundary).
- * Computed once at build time — the union itself takes ~300ms.
+ * @svg-maps/world's own India polygon already shares exact border
+ * coordinates with its Nepal/Bhutan/Pakistan/China/Myanmar/Bangladesh
+ * neighbors (they're digitized from the same atlas), but its J&K boundary
+ * is too narrow — missing the Aksai Chin bulge and full northern extent.
+ *
+ * @svg-maps/india's state-level dataset has the correct J&K shape, but it's
+ * digitized independently with a different projection: fitting its full
+ * 36-state union into the world map (via a single translate+scale) leaves
+ * the India-Nepal/Bhutan border "bowed" — touching at both ends but gapping
+ * visibly in the middle, since a linear transform can't correct for two
+ * different projections' curvature.
+ *
+ * The fix used here avoids both problems: keep @svg-maps/world's own India
+ * polygon as-is (so every border with a neighboring country stays exactly
+ * where that neighbor's own polygon expects it), and union in just the
+ * J&K polygon from @svg-maps/india — fitted with the same translate/scale
+ * used previously — as a local patch that only extends the shape in the
+ * J&K area. Any imprecision in that local fit only affects the
+ * Pakistan/China corner immediately around J&K, not the Nepal/Bhutan
+ * border along the rest of the country.
  */
 
 function parsePathToRings(d: string): Pair[][] {
@@ -69,16 +85,6 @@ function parsePathToRings(d: string): Pair[][] {
   return rings;
 }
 
-function ringArea(ring: Pair[]): number {
-  let area = 0;
-  for (let i = 0; i < ring.length - 1; i++) {
-    const [x1, y1] = ring[i];
-    const [x2, y2] = ring[i + 1];
-    area += x1 * y2 - x2 * y1;
-  }
-  return Math.abs(area / 2);
-}
-
 function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
   const subpaths: string[] = [];
   for (const polygon of multiPolygon) {
@@ -91,27 +97,29 @@ function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
   return subpaths.join(" ");
 }
 
+// Same local fit used for the (now superseded) full state-union approach —
+// still appropriate here since it positions J&K correctly against the
+// unchanged Punjab/Himachal/Ladakh-China corner of the world polygon.
+const JK_FIT = { translateX: 668.7978, translateY: 356.8638, scale: 0.125336 };
+
 function buildMergedIndiaPath(): string {
-  const allPolygons = (india as { locations: { path: string }[] }).locations.flatMap((loc) =>
-    parsePathToRings(loc.path).map((ring) => [ring])
+  const worldIndia = (worldMap as { locations: { id: string; path: string }[] }).locations.find(
+    (loc) => loc.id.toUpperCase() === "IN"
   );
+  if (!worldIndia) throw new Error("World map dataset has no India location");
+  const worldIndiaPolygons = parsePathToRings(worldIndia.path).map((ring) => [ring]);
 
-  const result = polygonClipping.union(allPolygons[0], ...allPolygons.slice(1));
+  const jk = (india as { locations: { name: string; path: string }[] }).locations.find(
+    (loc) => loc.name === "Jammu and Kashmir"
+  );
+  if (!jk) throw new Error("India states dataset has no Jammu and Kashmir location");
+  const jkPolygons = parsePathToRings(jk.path).map((ring) => [
+    ring.map(([x, y]): Pair => [x * JK_FIT.scale + JK_FIT.translateX, y * JK_FIT.scale + JK_FIT.translateY]),
+  ]);
 
-  // Hand-digitized adjacent state borders don't perfectly align, leaving
-  // many tiny sliver polygons/holes after the union — filter them out by
-  // area (real geography is orders of magnitude larger than the noise).
-  const AREA_THRESHOLD = 1;
-  const cleaned = result
-    .map((polygon) => {
-      const [exterior, ...holes] = polygon;
-      if (ringArea(exterior) <= AREA_THRESHOLD) return null;
-      const keptHoles = holes.filter((h) => ringArea(h) > AREA_THRESHOLD);
-      return [exterior, ...keptHoles];
-    })
-    .filter((p): p is (typeof result)[number] => p !== null);
-
-  return multiPolygonToPathD(cleaned);
+  const result = polygonClipping.union(worldIndiaPolygons[0], ...worldIndiaPolygons.slice(1), ...jkPolygons);
+  return multiPolygonToPathD(result);
 }
 
+/** Already in @svg-maps/world's own coordinate space — no transform needed when rendering. */
 export const mergedIndiaPath = buildMergedIndiaPath();
