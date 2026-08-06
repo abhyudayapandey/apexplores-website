@@ -3,6 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
 import { PRODUCTION_ORIGIN } from "../../lib/seo";
 import { withBase } from "../../lib/url";
+import { extractFaqSchema } from "../../lib/faq";
 
 export async function getStaticPaths() {
   const posts = await getCollection("blog");
@@ -35,6 +36,9 @@ const blogPostingSchema = {
   },
   mainEntityOfPage: `${PRODUCTION_ORIGIN}/blog/${post.data.slug}`,
 };
+
+const faqSchema = extractFaqSchema(post.body ?? "");
+const structuredData = faqSchema ? [blogPostingSchema, faqSchema] : blogPostingSchema;
 ---
 
 <Layout
@@ -42,7 +46,7 @@ const blogPostingSchema = {
   description={post.data.description}
   ogImage={post.data.heroImage}
   ogType="article"
-  structuredData={blogPostingSchema}
+  structuredData={structuredData}
 >
   <article class="mx-auto max-w-2xl">
     <a
