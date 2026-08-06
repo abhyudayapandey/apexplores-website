@@ -20,9 +20,21 @@ import polygonClipping, { type MultiPolygon, type Pair } from "polygon-clipping"
  * where that neighbor's own polygon expects it), and union in just the
  * J&K polygon from @svg-maps/india — fitted with the same translate/scale
  * used previously — as a local patch that only extends the shape in the
- * J&K area. Any imprecision in that local fit only affects the
- * Pakistan/China corner immediately around J&K, not the Nepal/Bhutan
- * border along the rest of the country.
+ * J&K area.
+ *
+ * That local fit is not pixel-perfect: measured against @svg-maps/world's
+ * own Pakistan and China polygons, the transformed J&K patch overlaps
+ * Pakistan by ~29 sq. units and China by ~27 sq. units (out of J&K's own
+ * ~182 sq. units) — big enough to be visible. Left alone, this doesn't just
+ * look imprecise, it actively renders wrong: China draws before India in
+ * @svg-maps/world's location order, so India's fill paints over part of
+ * China; Pakistan draws after India, so Pakistan's fill cuts a chunk out of
+ * India's J&K bulge. Rather than trying to chase a perfect projection-level
+ * fit (the Nepal/Bhutan gap already showed that's not reliable across two
+ * independently-digitized datasets), the patch is explicitly clipped
+ * against every other country it overlaps before being unioned in — so it
+ * can never paint over a neighbor or get painted over by one, regardless of
+ * how imprecise the local fit is.
  */
 
 function parsePathToRings(d: string): Pair[][] {
@@ -85,6 +97,27 @@ function parsePathToRings(d: string): Pair[][] {
   return rings;
 }
 
+function bbox(points: Pair[]) {
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity;
+  for (const [x, y] of points) {
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+    if (y < minY) minY = y;
+    if (y > maxY) maxY = y;
+  }
+  return { minX, maxX, minY, maxY };
+}
+
+function bboxesOverlap(
+  a: { minX: number; maxX: number; minY: number; maxY: number },
+  b: { minX: number; maxX: number; minY: number; maxY: number }
+): boolean {
+  return a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
+}
+
 function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
   const subpaths: string[] = [];
   for (const polygon of multiPolygon) {
@@ -113,11 +146,22 @@ function buildMergedIndiaPath(): string {
     (loc) => loc.name === "Jammu and Kashmir"
   );
   if (!jk) throw new Error("India states dataset has no Jammu and Kashmir location");
-  const jkPolygons = parsePathToRings(jk.path).map((ring) => [
+  const jkPolygons: MultiPolygon = parsePathToRings(jk.path).map((ring) => [
     ring.map(([x, y]): Pair => [x * JK_FIT.scale + JK_FIT.translateX, y * JK_FIT.scale + JK_FIT.translateY]),
   ]);
+  const jkBBox = bbox(jkPolygons.flat(2) as unknown as Pair[]);
 
-  const result = polygonClipping.union(worldIndiaPolygons[0], ...worldIndiaPolygons.slice(1), ...jkPolygons);
+  const otherCountryPolygons = (worldMap as { locations: { id: string; path: string }[] }).locations
+    .filter((loc) => loc.id.toUpperCase() !== "IN")
+    .flatMap((loc) => parsePathToRings(loc.path).map((ring): [Pair[]] => [ring]))
+    .filter((polygon) => bboxesOverlap(bbox(polygon[0]), jkBBox));
+
+  const trimmedJk =
+    otherCountryPolygons.length > 0
+      ? polygonClipping.difference(jkPolygons, ...otherCountryPolygons)
+      : jkPolygons;
+
+  const result = polygonClipping.union(worldIndiaPolygons[0], ...worldIndiaPolygons.slice(1), trimmedJk);
   return multiPolygonToPathD(result);
 }
 
