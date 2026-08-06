@@ -31,13 +31,16 @@ import polygonClipping, { type MultiPolygon, type Pair } from "polygon-clipping"
  * anywhere near, not just Nepal/Bhutan: the same "touches at the ends,
  * bows away in the middle" mismatch that caused the Nepal/Bhutan gap turned
  * out to affect the Pakistan border too once checked (a uniform scale-up
- * alone doesn't fix a bow — it needs shifting, not just resizing). Both the
- * translateX and translateY offsets below were tuned by rendering the
- * transformed shape against every neighbor's actual polygon and checking
- * the full length of each shared border, not just a couple of sample
- * points — a single close point (or even a good bounding-box match) can
- * hide a real gap along the rest of the border, which is exactly how the
- * Pakistan gap slipped through the first time.
+ * alone doesn't fix a bow — it needs shifting, not just resizing), and then
+ * a smaller residual notch showed up right at the India-Nepal-China
+ * trijunction near Uttarakhand. Both the translateX and translateY offsets
+ * below were tuned by rendering the transformed shape against every
+ * neighbor's actual polygon and checking the full length of each shared
+ * border, not just a couple of sample points or the "obvious" problem
+ * spots — a single close point (or even a good bounding-box match) can
+ * hide a real gap along the rest of the border or at a corner, which is
+ * how both the Pakistan gap and the trijunction notch slipped through
+ * earlier passes.
  */
 
 function parsePathToRings(d: string): Pair[][] {
@@ -123,12 +126,14 @@ function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
 }
 
 // Base translateX/translateY/scale position and size the union to match
-// @svg-maps/world's own (now-unused) India polygon. translateX is shifted 4
-// units further west and translateY 6 units further north than that match
-// would suggest, so the India-Pakistan border and the India-Nepal/Bhutan
-// border both meet or slightly overshoot their neighbors' polygons across
-// their full length, never fall short.
-const INDIA_FIT = { translateX: 668.7978 - 4, translateY: 356.8638 - 6, scale: 0.125336 };
+// @svg-maps/world's own (now-unused) India polygon. translateX is shifted 5
+// units further west and translateY 7 units further north than that match
+// would suggest, so the India-Pakistan border, the India-Nepal/Bhutan
+// border, and the trijunction where India, Nepal, and China meet near
+// Uttarakhand all meet or slightly overshoot their neighbors' polygons,
+// never fall short — checked across the full length of every shared
+// border, not just the specific spots that were reported as gaps.
+const INDIA_FIT = { translateX: 668.7978 - 5, translateY: 356.8638 - 7, scale: 0.125336 };
 
 function buildMergedIndiaPath(): string {
   const allPolygons = (india as { locations: { path: string }[] }).locations.flatMap((loc) =>
