@@ -25,11 +25,19 @@ import polygonClipping, { type MultiPolygon, type Pair } from "polygon-clipping"
  * instead of a geometric one: India is drawn as the very last region on the
  * world map (see WorldMap.astro), on top of every other country. That
  * makes any overlap with a neighbor invisible — India simply paints over
- * it — so the fit no longer needs to be conservative. The transform below
- * is deliberately biased to slightly overshoot the India-Nepal/Bhutan
- * border rather than risk falling short of it again; the overshoot is a
- * few tenths of a unit into Nepal/Bhutan/Pakistan/China's territory at
- * most, invisible at map scale, and never a gap.
+ * it — so the fit no longer needs to be conservative.
+ *
+ * The transform below is deliberately biased to overshoot every border it's
+ * anywhere near, not just Nepal/Bhutan: the same "touches at the ends,
+ * bows away in the middle" mismatch that caused the Nepal/Bhutan gap turned
+ * out to affect the Pakistan border too once checked (a uniform scale-up
+ * alone doesn't fix a bow — it needs shifting, not just resizing). Both the
+ * translateX and translateY offsets below were tuned by rendering the
+ * transformed shape against every neighbor's actual polygon and checking
+ * the full length of each shared border, not just a couple of sample
+ * points — a single close point (or even a good bounding-box match) can
+ * hide a real gap along the rest of the border, which is exactly how the
+ * Pakistan gap slipped through the first time.
  */
 
 function parsePathToRings(d: string): Pair[][] {
@@ -114,12 +122,13 @@ function multiPolygonToPathD(multiPolygon: MultiPolygon): string {
   return subpaths.join(" ");
 }
 
-// translateX/scale position and size the union to match @svg-maps/world's own
-// (now-unused) India polygon; translateY is shifted 6 units further north
-// than that match would suggest, specifically so the India-Nepal/Bhutan
-// border always meets or slightly overshoots Nepal/Bhutan's own polygons,
-// never falls short — verified visually across the full border length.
-const INDIA_FIT = { translateX: 668.7978, translateY: 356.8638 - 6, scale: 0.125336 };
+// Base translateX/translateY/scale position and size the union to match
+// @svg-maps/world's own (now-unused) India polygon. translateX is shifted 4
+// units further west and translateY 6 units further north than that match
+// would suggest, so the India-Pakistan border and the India-Nepal/Bhutan
+// border both meet or slightly overshoot their neighbors' polygons across
+// their full length, never fall short.
+const INDIA_FIT = { translateX: 668.7978 - 4, translateY: 356.8638 - 6, scale: 0.125336 };
 
 function buildMergedIndiaPath(): string {
   const allPolygons = (india as { locations: { path: string }[] }).locations.flatMap((loc) =>
