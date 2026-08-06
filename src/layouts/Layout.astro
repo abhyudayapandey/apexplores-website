@@ -35,7 +35,11 @@ const navLinks = [
   { href: withBase("/#contact", base), label: "Contact" },
 ];
 
-const socialLinks = [{ href: "https://instagram.com/apexplores", label: "Instagram" }];
+const socialLinks = [
+  { href: "https://instagram.com/apexplores", label: "Instagram", external: true },
+  { href: "https://www.linkedin.com/in/apexplores", label: "LinkedIn", external: true },
+  { href: withBase("/now", base), label: "Now", external: false },
+];
 ---
 
 <!doctype html>
@@ -107,8 +111,8 @@ const socialLinks = [{ href: "https://instagram.com/apexplores", label: "Instagr
             <li>
               <a
                 href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
+                target={link.external ? "_blank" : undefined}
+                rel={link.external ? "noopener noreferrer" : undefined}
                 class="transition-colors hover:text-[var(--color-rust)]"
               >
                 {link.label}
